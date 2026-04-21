@@ -18,7 +18,7 @@ Because the release is rolling, downloading the same URL again later will give y
 # Skills
 - **webcrack-deobfuscate** — Runs [webcrack](https://github.com/j4k0xb/webcrack) on `.js`/`.mjs`/`.cjs` files to deobfuscate, unminify, and unbundle them before Claude reads or analyzes them. Requires Node.js 22 or 24; the skill will `npm install -g webcrack` on first run.
 - **ilspy-decompile** — Decompiles .NET assemblies (`.dll`/`.exe`/`.netmodule`/`.winmd`/`.nupkg`) to readable C# via [ilspycmd](https://github.com/icsharpcode/ILSpy) before analysis. Requires the .NET SDK (9.0+ recommended); the skill will `dotnet tool install -g ilspycmd` on first run.
-
+- **timstamp-hunter** -Hunts for dates and/or timestamps in a byte array
 
 
 ### Iceman 2026
