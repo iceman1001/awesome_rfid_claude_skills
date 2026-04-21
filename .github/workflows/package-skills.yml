@@ -1,0 +1,83 @@
+name: Package skills
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build skill archives
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          shopt -s nullglob
+
+          for skill_dir in */; do
+            name="${skill_dir%/}"
+            [[ -f "$skill_dir/SKILL.md" ]] || continue
+            echo "::group::Packaging $name"
+
+            stage="$(mktemp -d)"
+            mkdir -p "$stage/$name/scripts"
+            cp "$skill_dir/SKILL.md" "$stage/$name/SKILL.md"
+
+            # Any loose *.sh at the skill root goes under scripts/ in the package,
+            # matching the path SKILL.md references post-install.
+            for sh in "$skill_dir"*.sh; do
+              cp "$sh" "$stage/$name/scripts/"
+            done
+            # Also pick up an existing scripts/ dir if the skill already uses that layout.
+            if [[ -d "$skill_dir/scripts" ]]; then
+              cp -R "$skill_dir/scripts/." "$stage/$name/scripts/"
+            fi
+            # Drop the scripts dir if it ended up empty.
+            [[ -n "$(ls -A "$stage/$name/scripts")" ]] || rmdir "$stage/$name/scripts"
+
+            # Flat zip: extracts directly into ~/.claude/skills/<name>/
+            ( cd "$stage/$name" && zip -qr "$GITHUB_WORKSPACE/dist/$name.zip" . )
+
+            # Prefixed .skill: self-contained archive with <name>/ as its root
+            ( cd "$stage" && zip -qr "$GITHUB_WORKSPACE/dist/$name.skill" "$name" )
+
+            echo "::endgroup::"
+          done
+
+          ls -la dist/
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-archives
+          path: dist/*
+
+      # Everything below only runs on push to master — PRs stop at the artifact upload.
+      - name: Clear previous "latest" release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Deleting first ensures assets for any removed skill don't linger.
+          gh release delete latest --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
+
+      - name: Publish rolling "latest" release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          body: |
+            Rolling release rebuilt from `master` on every merge.
+            Commit: ${{ github.sha }}
+          files: dist/*
+          prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
