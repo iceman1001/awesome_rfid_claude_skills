@@ -1,0 +1,9 @@
+# Python dependencies for the rigol-scope skill.
+#
+# External tool (NOT pip): the `lxi` CLI from lxi-tools / liblxi must be on PATH.
+#   Debian/Ubuntu: sudo apt install lxi-tools
+#
+# tkinter (used by rigol_view.py) ships with the Python stdlib but may need a system
+# package: Debian/Ubuntu  -> sudo apt install python3-tk
+
+Pillow>=9.0
