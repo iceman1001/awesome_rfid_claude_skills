@@ -20,5 +20,6 @@ Because the release is rolling, downloading the same URL again later will give y
 - **ilspy-decompile** — Decompiles .NET assemblies (`.dll`/`.exe`/`.netmodule`/`.winmd`/`.nupkg`) to readable C# via [ilspycmd](https://github.com/icsharpcode/ILSpy) before analysis. Requires the .NET SDK (9.0+ recommended); the skill will `dotnet tool install -g ilspycmd` on first run.
 - **timstamp-hunter** -Hunts for dates and/or timestamps in a byte array
 - **rigol-scope** -communicate with your RIGOL scope over LAN , capture traces and screen dumps
+- **re-electron** -RE electron applications
 
 ### Iceman 2026
